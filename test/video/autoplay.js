@@ -21,14 +21,14 @@ Checks for support of the autoplay attribute of the video element.
 
   Modernizr.addAsyncTest(function() {
     var timeout;
-    var waitTime = 300;
+    var waitTime = 500;
     var elem = createElement('video');
     var elemStyle = elem.style;
 
     function testAutoplay(arg) {
       clearTimeout(timeout);
       elem.removeEventListener('playing', testAutoplay, false);
-      addTest('videoautoplay', arg && arg.type === 'playing' || elem.currentTime !== 0);
+      addTest('videoautoplay', arg && arg.type === 'playing' || elem.currentTime !== 0 || !elem.paused);
       elem.parentNode.removeChild(elem);
     }
 
@@ -40,8 +40,8 @@ Checks for support of the autoplay attribute of the video element.
     }
 
     elemStyle.position = 'absolute';
-    elemStyle.height = 0;
-    elemStyle.width = 0;
+    elemStyle.height = 100;
+    elemStyle.width = 100;
 
     try {
       if (Modernizr.video.ogg) {
@@ -61,12 +61,13 @@ Checks for support of the autoplay attribute of the video element.
       return;
     }
 
-    elem.setAttribute('autoplay','');
+    elem.autoplay = true;
     elem.style.cssText = 'display:none';
     docElement.appendChild(elem);
     // wait for the next tick to add the listener, otherwise the element may
     // not have time to play in high load situations (e.g. the test suite)
     setTimeout(function() {
+      elem.onplaying = testAutoplay;
       elem.addEventListener('playing', testAutoplay, false);
       timeout = setTimeout(testAutoplay, waitTime);
     }, 0);
